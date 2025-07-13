@@ -7,9 +7,10 @@ type AsyncHandler = (
 ) => Promise<void>;
 
 export const catchAsync =
-  (fn: AsyncHandler) => (res: Request, req: Response, next: NextFunction) => {
+  (fn: AsyncHandler) =>
+  async (res: Request, req: Response, next: NextFunction) => {
     try {
-      fn(res, req, next);
+      await fn(res, req, next);
     } catch (error) {
       console.log(error);
       next(error);
