@@ -1,10 +1,14 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import appError from "../../errorHelper/appError";
 import { IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
 import httpStatus from "http-status-codes";
 import bcryptjs from "bcryptjs";
-import { generateToken } from "../../utils/jwt";
-import { envVars } from "../../config/env";
+import {
+  createNewAccessTokeWithRefreshToken,
+  createUserToken,
+} from "../../utils/userToken";
+import { JwtPayload } from "jsonwebtoken";
 
 const credentialLogin = async (payload: Partial<IUser>) => {
   const { email, password } = payload;
@@ -21,20 +25,45 @@ const credentialLogin = async (payload: Partial<IUser>) => {
     throw new appError(httpStatus.BAD_REQUEST, "Password does not match");
   }
 
-  const accessToken = generateToken(
-    {
-      userId: isUserExist._id,
-      email: isUserExist.email,
-      role: isUserExist.role,
-    },
-    envVars.JWT_SECRET_KEY,
-    envVars.JWT_EXPIRES_IN
-  );
+  const userToken = createUserToken(isUserExist);
 
   return {
-    accessToken,
+    accessToken: userToken.accessToken,
+    refreshToken: userToken.refreshToken,
     user: isUserExist,
   };
 };
 
-export const authService = { credentialLogin };
+const getNewAccessToken = async (refreshToken: string) => {
+  const newToken = await createNewAccessTokeWithRefreshToken(refreshToken);
+
+  return {
+    accessToken: newToken,
+  };
+};
+
+const resetPassword = async (
+  oldPassword: string,
+  newPassword: string,
+  decodedToken: JwtPayload
+) => {
+  const user = await User.findById(decodedToken.userId);
+
+  const isOldPasswordMatch = await bcryptjs.compare(
+    oldPassword,
+    user!.password as string
+  );
+
+  if (!isOldPasswordMatch) {
+    throw new appError(httpStatus.UNAUTHORIZED, "old password does not match");
+  }
+
+  user!.password = await bcryptjs.hash(newPassword, 10);
+  user!.save();
+};
+
+export const authService = {
+  credentialLogin,
+  getNewAccessToken,
+  resetPassword,
+};
