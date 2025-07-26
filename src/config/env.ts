@@ -17,6 +17,18 @@ interface EnvConfig {
   GOOGLE_CALLBACK_URL: string;
   EXPRESS_SESSION_SECRET: string;
   FRONTEND_URL: string;
+  SSL: {
+    SSL_STORE_ID: string;
+    SSL_STORE_PASSWORD: string;
+    SSL_PAYMENT_API: string;
+    SSL_VALIDATION_API: string;
+    SSL_SUCCESS_FRONTEND_URL: string;
+    SSL_FAIL_FRONTEND_URL: string;
+    SSL_CANCEL_FRONTEND_URL: string;
+    SSL_SUCCESS_BACKEND_URL: string;
+    SSL_FAIL_BACKEND_URL: string;
+    SSL_CANCEL_BACKEND_URL: string;
+  };
 }
 
 const loadEnvVariable = (): EnvConfig => {
@@ -35,6 +47,16 @@ const loadEnvVariable = (): EnvConfig => {
     "GOOGLE_CALLBACK_URL",
     "EXPRESS_SESSION_SECRET",
     "FRONTEND_URL",
+    "SSL_STORE_ID",
+    "SSL_STORE_PASSWORD",
+    "SSL_PAYMENT_API",
+    "SSL_VALIDATION_API",
+    "SSL_SUCCESS_FRONTEND_URL",
+    "SSL_FAIL_FRONTEND_URL",
+    "SSL_CANCEL_FRONTEND_URL",
+    "SSL_SUCCESS_BACKEND_URL",
+    "SSL_FAIL_BACKEND_URL",
+    "SSL_CANCEL_BACKEND_URL",
   ];
   requiredEnvVars.forEach((key) => {
     if (!process.env[key]) {
@@ -57,6 +79,18 @@ const loadEnvVariable = (): EnvConfig => {
     FRONTEND_URL: process.env.FRONTEND_URL as string,
     SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL as string,
     SUPER_ADMIN_PASSWORD: process.env.SUPER_ADMIN_PASSWORD as string,
+    SSL: {
+      SSL_STORE_ID: process.env.SSL_STORE_ID as string,
+      SSL_STORE_PASSWORD: process.env.SSL_STORE_PASSWORD as string,
+      SSL_PAYMENT_API: process.env.SSL_PAYMENT_API as string,
+      SSL_VALIDATION_API: process.env.SSL_VALIDATION_API as string,
+      SSL_SUCCESS_FRONTEND_URL: process.env.SSL_SUCCESS_FRONTEND_URL as string,
+      SSL_FAIL_FRONTEND_URL: process.env.SSL_FAIL_FRONTEND_URL as string,
+      SSL_CANCEL_FRONTEND_URL: process.env.SSL_CANCEL_FRONTEND_URL as string,
+      SSL_SUCCESS_BACKEND_URL: process.env.SSL_SUCCESS_BACKEND_URL as string,
+      SSL_FAIL_BACKEND_URL: process.env.SSL_FAIL_BACKEND_URL as string,
+      SSL_CANCEL_BACKEND_URL: process.env.SSL_CANCEL_BACKEND_URL as string,
+    },
   };
 };
 
