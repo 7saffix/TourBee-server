@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import appError from "../../errorHelper/appError";
 import { IauthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
@@ -28,14 +29,51 @@ const createUser = async (payload: Partial<IUser>) => {
   return user;
 };
 
-const getAllUsers = async () => {
-  const users = await User.find({});
+const getAllUsers = async (queryOptions: any) => {
+  const { page, limit, sortBy, search, isActive, role } = queryOptions;
 
-  const totalUser = await User.countDocuments();
+  const query: any = {};
 
+  //filter
+  if (role) query.role = role;
+  if (isActive) query.isActive = isActive;
+
+  //search
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+      { role: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  //sort
+  let sortOptions: any = {};
+  switch (sortBy) {
+    case "A-Z":
+      sortOptions = { email: 1 };
+      break;
+    case "Z-A":
+      sortOptions = { email: -1 };
+      break;
+    default:
+      sortOptions = { createdAt: -1 };
+  }
+
+  //pagination
+  const skip = (page - 1) * limit;
+  const totalUser = await User.countDocuments(query);
+
+  const users = await User.find(query)
+    // .collation({ locale: "en", strength: 2 }) when using name but if there any upper case in name
+    .skip(skip)
+    .limit(limit)
+    .sort(sortOptions);
   return {
     users,
     meta: {
+      page,
+      limit,
       total: totalUser,
     },
   };

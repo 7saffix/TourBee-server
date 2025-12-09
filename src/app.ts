@@ -3,10 +3,10 @@ import { router } from "./routes";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import { notFound } from "./middlewares/notFound";
 import cookieParser from "cookie-parser";
-import passport from "passport";
 import expressSession from "express-session";
 import "./config/passport";
 import { envVars } from "./config/env";
+import passport from "passport";
 
 const app = express();
 app.use(express.json());

@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { tourService } from "./tour.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status-codes";
+import { ITourQueryOptions } from "./tour.interface";
 
 //---------- Tour Type----------
 const createTourType = catchAsync(
@@ -74,8 +76,7 @@ const createTour = catchAsync(
 
 const getAllTours = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const query = req.query as Record<string, string>;
-    const result = await tourService.getAllTour(query);
+    const result = await tourService.getAllTour(req.query as any);
 
     sendResponse(res, {
       success: true,
