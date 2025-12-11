@@ -1,53 +1,51 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import mongoose from "mongoose";
 import { BOOKING_STATUS } from "../booking/booking.interface";
 import { Booking } from "../booking/booking.model";
 import { PAYMENT_STATUS } from "./payment.interface";
 import { Payment } from "./payment.model";
+import appError from "../../errorHelper/appError";
+import { SSLService } from "../sslCommerz/sslCommerz.service";
 
 const successPayment = async (query: Record<string, string>) => {
-  const session = await Booking.startSession();
+  const session = await mongoose.startSession();
   session.startTransaction();
-
   try {
-    const updatedPayment = await Payment.findOneAndUpdate(
+    const updatePayment = await Payment.findOneAndUpdate(
       { transactionId: query.transactionId },
       { status: PAYMENT_STATUS.PAID },
-      { new: true, runValidators: true, session }
+      { runValidators: true, session }
     );
-
     await Booking.findOneAndUpdate(
-      updatedPayment?.booking,
-      {
-        status: BOOKING_STATUS.COMPLETED,
-      },
-      { new: true, runValidators: true, session }
+      { _id: updatePayment?.booking },
+      { status: BOOKING_STATUS.COMPLETED },
+      { runValidators: true, session }
     );
     await session.commitTransaction();
     session.endSession();
 
     return {
       success: true,
-      message: "Payment Completed Successfully",
+      message: "payment successful",
     };
   } catch (error) {
-    session.abortTransaction();
+    await session.abortTransaction();
     session.endSession();
     throw error;
   }
 };
 
 const failPayment = async (query: Record<string, string>) => {
-  const session = await Booking.startSession();
+  const session = await mongoose.startSession();
   session.startTransaction();
-
   try {
     const updatedPayment = await Payment.findOneAndUpdate(
       { transactionId: query.transactionId },
       { status: PAYMENT_STATUS.FAILED },
       { runValidators: true, session }
     );
-
     await Booking.findOneAndUpdate(
-      updatedPayment?.booking,
+      { _id: updatedPayment?.booking },
       { status: BOOKING_STATUS.FAILED },
       { runValidators: true, session }
     );
@@ -57,19 +55,18 @@ const failPayment = async (query: Record<string, string>) => {
 
     return {
       success: false,
-      message: "Payment Failed",
+      message: "payment failed",
     };
   } catch (error) {
-    session.abortTransaction();
+    await session.abortTransaction();
     session.endSession();
     throw error;
   }
 };
 
 const cancelPayment = async (query: Record<string, string>) => {
-  const session = await Booking.startSession();
+  const session = await mongoose.startSession();
   session.startTransaction();
-
   try {
     const updatedPayment = await Payment.findOneAndUpdate(
       { transactionId: query.transactionId },
@@ -78,7 +75,7 @@ const cancelPayment = async (query: Record<string, string>) => {
     );
 
     await Booking.findOneAndUpdate(
-      updatedPayment?.booking,
+      { _id: updatedPayment?.booking },
       { status: BOOKING_STATUS.CANCEL },
       { runValidators: true, session }
     );
@@ -88,13 +85,41 @@ const cancelPayment = async (query: Record<string, string>) => {
 
     return {
       success: false,
-      message: "Payment Failed",
+      message: "payment cancel",
     };
   } catch (error) {
-    session.abortTransaction();
+    await session.abortTransaction();
     session.endSession();
     throw error;
   }
 };
 
-export const paymentService = { successPayment, failPayment, cancelPayment };
+const initPayment = async (bookingId: string) => {
+  const payment = await Payment.findOne({ booking: bookingId });
+
+  if (!payment) throw new appError(404, "payment not found");
+
+  const booking = await Booking.findById(payment.booking);
+
+  const sslPayload = {
+    name: (booking?.user as any).name,
+    email: (booking?.user as any).email,
+    phone: (booking?.user as any).phone,
+    address: (booking?.user as any).address,
+    amount: payment.amount,
+    transactionId: payment.transactionId,
+  };
+
+  const sslPayment = await SSLService.sslPaymentInit(sslPayload);
+
+  return {
+    paymentUrl: sslPayment.GatewayPageURL,
+  };
+};
+
+export const paymentService = {
+  successPayment,
+  failPayment,
+  cancelPayment,
+  initPayment,
+};

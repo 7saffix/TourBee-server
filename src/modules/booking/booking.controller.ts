@@ -22,4 +22,66 @@ const createBooking = catchAsync(
   }
 );
 
-export const bookingController = { createBooking };
+const getMyBookings = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decoded = req.user as JwtPayload;
+    const bookings = await bookingService.getMyBookings(decoded.userId);
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "booking retrieved successfully",
+      data: bookings,
+    });
+  }
+);
+
+const getSingleBooking = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decoded = req.user as JwtPayload;
+    const bookingId = req.params.bookingId;
+    const booking = await bookingService.getSingleBooking(
+      decoded.userId,
+      bookingId
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "booking retrieved",
+      data: booking,
+    });
+  }
+);
+
+const getAllBookings = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const bookings = await bookingService.getAllBookings();
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "All bookings successfully retrieved",
+      data: bookings,
+    });
+  }
+);
+
+const updateBooking = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const bookingId = req.params.bookingId;
+    const status = req.body.status;
+    const booking = await bookingService.updateBooking(bookingId, status);
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "booking updated successfully",
+      data: booking,
+    });
+  }
+);
+
+export const bookingController = {
+  createBooking,
+  getMyBookings,
+  getSingleBooking,
+  getAllBookings,
+  updateBooking,
+};
