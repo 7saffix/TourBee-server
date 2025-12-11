@@ -1,7 +1,9 @@
+import mongoose from "mongoose";
 import appError from "../../errorHelper/appError";
 import { IDivision } from "./division.interface";
 import { Division } from "./division.model";
 import httpStatus from "http-status-codes";
+import { deleteFromCloudinary } from "../../config/cloudinary.config";
 
 const createDivision = async (payload: Partial<IDivision>) => {
   const isDivisionExist = await Division.findOne({ name: payload.name });
@@ -28,25 +30,40 @@ const getAllDivision = async () => {
 };
 
 const updateDivision = async (id: string, payload: Partial<IDivision>) => {
-  const isExist = await Division.findById(id);
-  if (!isExist) {
-    throw new appError(httpStatus.NOT_FOUND, "Division Not Found!");
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const isExist = await Division.findById(id).session(session);
+    if (!isExist) {
+      throw new appError(httpStatus.NOT_FOUND, "Division Not Found!");
+    }
+
+    const isDuplicate = await Division.findOne({
+      name: payload.name,
+      _id: { $ne: id },
+    }).session(session);
+
+    if (isDuplicate) {
+      throw new appError(httpStatus.BAD_REQUEST, "This Name is already Exist");
+    }
+
+    const updatedData = await Division.findByIdAndUpdate(id, payload, {
+      new: true,
+      session,
+    });
+    await session.commitTransaction();
+    session.endSession();
+
+    if (payload.thumbnail && isExist.thumbnail) {
+      await deleteFromCloudinary(isExist.thumbnail);
+    }
+
+    return updatedData;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
   }
-
-  const isDuplicate = await Division.findOne({
-    name: payload.name,
-    _id: { $ne: id },
-  });
-
-  if (isDuplicate) {
-    throw new appError(httpStatus.BAD_REQUEST, "This Name is already Exist");
-  }
-
-  const updatedData = await Division.findByIdAndUpdate(id, payload, {
-    new: true,
-  });
-
-  return updatedData;
 };
 
 const deleteDivision = async (id: string) => {

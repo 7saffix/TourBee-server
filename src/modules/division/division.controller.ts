@@ -7,7 +7,12 @@ import { divisionService } from "./division.service";
 
 const createDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const division = await divisionService.createDivision(req.body);
+    const payload = {
+      ...req.body,
+      thumbnail: req.file?.path,
+    };
+
+    const division = await divisionService.createDivision(payload);
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.CREATED,
@@ -30,13 +35,17 @@ const getAllDivision = catchAsync(
 );
 const updateDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+    const payload = {
+      ...req.body,
+      thumbnail: req.file?.path,
+    };
     const updatedData = await divisionService.updateDivision(
       req.params.id,
-      req.body
+      payload
     );
     sendResponse(res, {
       success: true,
-      statusCode: httpStatus.CREATED,
+      statusCode: httpStatus.OK,
       message: "division updated successfully",
       data: updatedData,
     });

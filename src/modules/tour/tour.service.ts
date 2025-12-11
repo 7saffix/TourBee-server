@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-dynamic-delete */
 
+import mongoose from "mongoose";
 import appError from "../../errorHelper/appError";
 // import { QueryBuilder } from "../../utils/QueryBuilder";
 // import { tourSearchField } from "./tour.constant";
 import { ITour, ITourQueryOptions, ITourType } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
 import httpStatus from "http-status-codes";
+import { deleteFromCloudinary } from "../../config/cloudinary.config";
 
 //---------- Tour Type----------
 const createTourType = async (payload: ITourType) => {
@@ -183,16 +185,62 @@ const getAllTour = async (queryOptions: ITourQueryOptions) => {
 };
 
 const updateTour = async (id: string, payload: Partial<ITour>) => {
-  const isExist = await Tour.findById(id);
-  if (!isExist) {
-    throw new appError(httpStatus.NOT_FOUND, "tour not found");
-  }
-  const updatedTour = await Tour.findByIdAndUpdate(id, payload, {
-    new: true,
-    runValidators: true,
-  });
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const isExist = await Tour.findById(id).session(session);
+    if (!isExist) {
+      throw new appError(httpStatus.NOT_FOUND, "tour not found");
+    }
+    //add new image
+    if (
+      payload.images &&
+      payload.images.length &&
+      isExist.images &&
+      isExist.images.length
+    ) {
+      payload.images = [...payload.images, ...isExist.images];
+    }
 
-  return updatedTour;
+    //delete image
+    if (
+      payload.deletedImage &&
+      payload.deletedImage.length &&
+      isExist.images &&
+      isExist.images.length
+    ) {
+      const restImg = isExist.images.filter(
+        (imgUrl) => !payload.deletedImage?.includes(imgUrl)
+      );
+      payload.images = [...restImg];
+    }
+
+    const updatedTour = await Tour.findByIdAndUpdate(id, payload, {
+      new: true,
+      runValidators: true,
+    });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    //delete from cloudinary
+    if (
+      payload.deletedImage &&
+      payload.deletedImage.length &&
+      isExist.images &&
+      isExist.images.length
+    ) {
+      await Promise.all(
+        payload.deletedImage.map((url) => deleteFromCloudinary(url))
+      );
+    }
+
+    return updatedTour;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };
 
 const deleteTour = async (id: string) => {
@@ -206,6 +254,7 @@ const deleteTour = async (id: string) => {
 
   return null;
 };
+
 export const tourService = {
   createTourType,
   getAllTourType,

@@ -63,7 +63,12 @@ const deleteTourType = catchAsync(
 //---------- Tour ----------
 const createTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const tour = await tourService.createTour(req.body);
+    const payload = {
+      ...req.body,
+      images: (req.files as Express.Multer.File[]).map((file) => file.path),
+    };
+
+    const tour = await tourService.createTour(payload);
 
     sendResponse(res, {
       success: true,
@@ -90,7 +95,11 @@ const getAllTours = catchAsync(
 
 const updateTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const tour = await tourService.updateTour(req.params.id, req.body);
+    const payload = {
+      ...req.body,
+      images: (req.files as Express.Multer.File[]).map((file) => file.path),
+    };
+    const tour = await tourService.updateTour(req.params.id, payload);
 
     sendResponse(res, {
       success: true,

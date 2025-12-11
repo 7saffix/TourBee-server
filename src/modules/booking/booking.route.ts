@@ -23,7 +23,7 @@ router.get(
   bookingController.getAllBookings
 );
 router.get(
-  "/my-booking",
+  "/my-bookings",
   authCheck(...Object.values(Role)),
   bookingController.getMyBookings
 );

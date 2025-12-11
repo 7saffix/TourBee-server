@@ -64,4 +64,5 @@ export const updateTourZodSchema = z.object({
   excluded: z.array(z.string()).optional(),
   tourPlan: z.array(z.string()).optional(),
   amenities: z.array(z.string()).optional(),
+  deletedImage: z.array(z.string()).optional(),
 });
