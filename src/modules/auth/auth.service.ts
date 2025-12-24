@@ -8,7 +8,9 @@ import {
   createNewAccessTokeWithRefreshToken,
   createUserToken,
 } from "../../utils/userToken";
-import { JwtPayload } from "jsonwebtoken";
+import { generateToken } from "../../utils/jwt";
+import { envVars } from "../../config/env";
+import { sendEmail } from "../../utils/sendEmail";
 
 const credentialLogin = async (payload: Partial<IUser>) => {
   const { email, password } = payload;
@@ -42,28 +44,46 @@ const getNewAccessToken = async (refreshToken: string) => {
   };
 };
 
-const resetPassword = async (
-  oldPassword: string,
-  newPassword: string,
-  decodedToken: JwtPayload
-) => {
-  const user = await User.findById(decodedToken.userId);
-
-  const isOldPasswordMatch = await bcryptjs.compare(
-    oldPassword,
-    user!.password as string
-  );
-
-  if (!isOldPasswordMatch) {
-    throw new appError(httpStatus.UNAUTHORIZED, "old password does not match");
+const forgetPassword = async (email: string) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new appError(404, "user doest not exist");
   }
+  const JwtPayload = {
+    userId: user._id,
+    email: user.email,
+    role: user.role,
+  };
 
-  user!.password = await bcryptjs.hash(newPassword, 10);
-  user!.save();
+  const resetToken = generateToken(JwtPayload, envVars.JWT_SECRET_KEY, "10m");
+
+  const resetUILink = `${envVars.FRONTEND_URL}/reset-password?id=${user._id}&token=${resetToken}`;
+
+  await sendEmail({
+    to: user.email,
+    subject: "Reset password",
+    templateName: "forgetPassword",
+    templateData: {
+      name: user.name,
+      resetUILink,
+    },
+  });
+};
+
+const resetPassword = async (id: string, newPassword: string) => {
+  const user = await User.findById(id);
+
+  if (!user) throw new appError(404, "user not found");
+
+  const hashPassword = await bcryptjs.hash(newPassword, 10);
+
+  user.password = hashPassword;
+  await user.save();
 };
 
 export const authService = {
   credentialLogin,
   getNewAccessToken,
+  forgetPassword,
   resetPassword,
 };

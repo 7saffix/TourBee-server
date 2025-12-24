@@ -9,11 +9,13 @@ const router = Router();
 router.post("/login", authController.credentialLogin);
 router.post("/refresh-token", authController.getNewAccessToken);
 router.post("/logout", authController.logOut);
+router.post("/forget-password", authController.forgetPassword);
 router.post(
   "/reset-password",
   authCheck(...Object.values(Role)),
   authController.resetPassword
 );
+
 router.get(
   "/google",
   async (req: Request, res: Response, next: NextFunction) => {

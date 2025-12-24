@@ -218,6 +218,7 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
     const updatedTour = await Tour.findByIdAndUpdate(id, payload, {
       new: true,
       runValidators: true,
+      session,
     });
 
     await session.commitTransaction();
