@@ -9,7 +9,6 @@ import { setCookies } from "../../utils/setCookies";
 import appError from "../../errorHelper/appError";
 import { createUserToken } from "../../utils/userToken";
 import { envVars } from "../../config/env";
-import { JwtPayload } from "jsonwebtoken";
 import passport from "passport";
 
 const credentialLogin = catchAsync(
