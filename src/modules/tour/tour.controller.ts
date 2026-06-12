@@ -18,7 +18,7 @@ const createTourType = catchAsync(
       message: "tour type created successfully",
       data: tourType,
     });
-  }
+  },
 );
 
 const getAllTourType = catchAsync(
@@ -31,7 +31,7 @@ const getAllTourType = catchAsync(
       message: "tour types retrieved successfully",
       data: tourTypes,
     });
-  }
+  },
 );
 
 const updateTourType = catchAsync(
@@ -44,7 +44,7 @@ const updateTourType = catchAsync(
       message: "tour type updated successfully",
       data: tourType,
     });
-  }
+  },
 );
 
 const deleteTourType = catchAsync(
@@ -57,7 +57,7 @@ const deleteTourType = catchAsync(
       message: "tour type deleted successfully",
       data: null,
     });
-  }
+  },
 );
 
 //---------- Tour ----------
@@ -65,7 +65,10 @@ const createTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const payload = {
       ...req.body,
-      images: (req.files as Express.Multer.File[]).map((file) => file.path),
+      costForm: req.body.costForm ? Number(req.body.costForm) : undefined,
+      maxGuest: req.body.maxGuest ? Number(req.body.maxGuest) : undefined,
+      minAge: req.body.minAge ? Number(req.body.minAge) : undefined,
+      images: (req.files as Express.Multer.File[])?.map((file) => file.path),
     };
 
     const tour = await tourService.createTour(payload);
@@ -76,7 +79,7 @@ const createTour = catchAsync(
       message: "tour created successfully",
       data: tour,
     });
-  }
+  },
 );
 
 const getAllTours = catchAsync(
@@ -90,7 +93,7 @@ const getAllTours = catchAsync(
       meta: result.meta,
       data: result.tours,
     });
-  }
+  },
 );
 
 const updateTour = catchAsync(
@@ -107,7 +110,7 @@ const updateTour = catchAsync(
       message: "tour updated successfully",
       data: tour,
     });
-  }
+  },
 );
 
 const deleteTour = catchAsync(
@@ -120,7 +123,7 @@ const deleteTour = catchAsync(
       message: "tour deleted successfully",
       data: null,
     });
-  }
+  },
 );
 
 export const tourController = {

@@ -13,7 +13,7 @@ router.post("/forget-password", authController.forgetPassword);
 router.post(
   "/reset-password",
   authCheck(...Object.values(Role)),
-  authController.resetPassword
+  authController.resetPassword,
 );
 
 router.get(
@@ -24,13 +24,13 @@ router.get(
       scope: ["profile", "email"],
       state: redirect as string,
     })(req, res, next);
-  }
+  },
 );
 
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
-  authController.googleCallback
+  authController.googleCallback,
 );
 
 export const authRoutes = router;

@@ -6,8 +6,8 @@ import { PAYMENT_STATUS } from "./payment.interface";
 import { Payment } from "./payment.model";
 import appError from "../../errorHelper/appError";
 import { SSLService } from "../sslCommerz/sslCommerz.service";
-import { generateInvoice, IInvoiceData } from "../../utils/generateInvoice";
-import { sendEmail } from "../../utils/sendEmail";
+// import { generateInvoice, IInvoiceData } from "../../utils/generateInvoice";
+// import { sendEmail } from "../../utils/sendEmail";
 
 const successPayment = async (query: Record<string, string>) => {
   const session = await mongoose.startSession();
@@ -16,42 +16,40 @@ const successPayment = async (query: Record<string, string>) => {
     const updatePayment = await Payment.findOneAndUpdate(
       { transactionId: query.transactionId },
       { status: PAYMENT_STATUS.PAID },
-      { runValidators: true, session }
+      { runValidators: true, session },
     );
-    const updatedBooking = await Booking.findOneAndUpdate(
+    await Booking.findOneAndUpdate(
       { _id: updatePayment?.booking },
       { status: BOOKING_STATUS.COMPLETED },
-      { new: true, runValidators: true, session }
+      { new: true, runValidators: true, session },
     )
       .populate("user", "name email")
       .populate("tour", "title");
 
-    const invoiceData: IInvoiceData = {
-      username: (updatedBooking?.user as any).name,
-      tour: (updatedBooking?.tour as any).title,
-      totalGuest: updatedBooking?.guestCount as number,
-      totalAmount: updatePayment?.amount as number,
-      transactionID: updatePayment?.transactionId as string,
-      bookingDate: updatedBooking?.createdAt as Date,
-    };
+    // const invoiceData: IInvoiceData = {
+    //   username: (updatedBooking?.user as any).name,
+    //   tour: (updatedBooking?.tour as any).title,
+    //   totalGuest: updatedBooking?.guestCount as number,
+    //   totalAmount: updatePayment?.amount as number,
+    //   transactionID: updatePayment?.transactionId as string,
+    //   bookingDate: updatedBooking?.createdAt as Date,
+    // };
 
-    const invoicePdf = await generateInvoice(invoiceData);
+    // const invoicePdf = await generateInvoice(invoiceData);
 
-    console.log(invoiceData);
-
-    await sendEmail({
-      to: (updatedBooking?.user as any).email,
-      subject: "Payment invoice",
-      templateName: "invoice",
-      templateData: { name: (updatedBooking?.user as any).name },
-      attachments: [
-        {
-          fileName: "invoice.pdf",
-          content: invoicePdf as string,
-          contentType: "application/pdf",
-        },
-      ],
-    });
+    // await sendEmail({
+    //   to: (updatedBooking?.user as any).email,
+    //   subject: "Payment invoice",
+    //   templateName: "invoice",
+    //   templateData: { name: (updatedBooking?.user as any).name },
+    //   attachments: [
+    //     {
+    //       fileName: "invoice.pdf",
+    //       content: invoicePdf as string,
+    //       contentType: "application/pdf",
+    //     },
+    //   ],
+    // });
 
     await session.commitTransaction();
     session.endSession();
@@ -74,12 +72,12 @@ const failPayment = async (query: Record<string, string>) => {
     const updatedPayment = await Payment.findOneAndUpdate(
       { transactionId: query.transactionId },
       { status: PAYMENT_STATUS.FAILED },
-      { runValidators: true, session }
+      { runValidators: true, session },
     );
     await Booking.findOneAndUpdate(
       { _id: updatedPayment?.booking },
       { status: BOOKING_STATUS.FAILED },
-      { runValidators: true, session }
+      { runValidators: true, session },
     );
 
     await session.commitTransaction();
@@ -103,13 +101,13 @@ const cancelPayment = async (query: Record<string, string>) => {
     const updatedPayment = await Payment.findOneAndUpdate(
       { transactionId: query.transactionId },
       { status: PAYMENT_STATUS.CANCELED },
-      { runValidators: true, session }
+      { runValidators: true, session },
     );
 
     await Booking.findOneAndUpdate(
       { _id: updatedPayment?.booking },
       { status: BOOKING_STATUS.CANCEL },
-      { runValidators: true, session }
+      { runValidators: true, session },
     );
 
     await session.commitTransaction();

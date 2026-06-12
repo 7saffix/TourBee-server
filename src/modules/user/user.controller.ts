@@ -22,6 +22,20 @@ const createUser = catchAsync(
   }
 );
 
+const getMe = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.user as JwtPayload;
+
+    const result = await userService.getMe(email);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "profile retrieved successfully",
+      data: result,
+    });
+  }
+);
 const getAllUsers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const result = await userService.getAllUsers(req.query);
@@ -61,4 +75,4 @@ const updateUser = catchAsync(
     });
   }
 );
-export const userControllers = { createUser, getAllUsers, updateUser };
+export const userControllers = { createUser, getAllUsers, updateUser, getMe };

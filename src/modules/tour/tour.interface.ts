@@ -25,7 +25,10 @@ export interface ITour {
 }
 
 export interface ITourQueryOptions {
+  id: string;
+  slug: string;
   location: string;
+  division: string;
   tourType: string;
   maxCost: string;
   search: string;

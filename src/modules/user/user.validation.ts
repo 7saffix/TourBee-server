@@ -11,16 +11,16 @@ export const createUserZodSchema = z.object({
     .email({ message: "Invalid email format" }),
   password: z
     .string({ invalid_type_error: "password must be string" })
-    .min(8, { message: "password must be at least 8 character long" })
-    .regex(/^(?=.*[A-Z]).*$/, {
-      message: "password must contain at least 1 uppercase",
-    })
-    .regex(/^(?=.*\d).*$/, {
-      message: "password must contain at least 1 number",
-    })
-    .regex(/^(?=.*[!@#$%^&*(),.?":{}|<>]).*$/, {
-      message: "password must contain at least 1 special character",
-    }),
+    .min(8, { message: "password must be at least 8 character long" }),
+  // .regex(/^(?=.*[A-Z]).*$/, {
+  //   message: "password must contain at least 1 uppercase",
+  // })
+  // .regex(/^(?=.*\d).*$/, {
+  //   message: "password must contain at least 1 number",
+  // })
+  // .regex(/^(?=.*[!@#$%^&*(),.?":{}|<>]).*$/, {
+  //   message: "password must contain at least 1 special character",
+  // })
   phone: z
     .string({ invalid_type_error: "Phone must be string" })
     .regex(/^01[3-9]\d{8}$/, {
@@ -37,10 +37,6 @@ export const updateUserZodSchema = z.object({
     .string({ invalid_type_error: "Name must be string" })
     .min(3, { message: "Name must be minimum 3 character long" })
     .max(50, { message: "Name cannot be more than 50 Character" })
-    .optional(),
-  email: z
-    .string({ invalid_type_error: "Email must be string" })
-    .email({ message: "Invalid email format" })
     .optional(),
   password: z
     .string({ invalid_type_error: "password must be string" })

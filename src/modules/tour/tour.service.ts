@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-dynamic-delete */
 
-import mongoose from "mongoose";
 import appError from "../../errorHelper/appError";
 // import { QueryBuilder } from "../../utils/QueryBuilder";
 // import { tourSearchField } from "./tour.constant";
@@ -9,6 +8,7 @@ import { ITour, ITourQueryOptions, ITourType } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
 import httpStatus from "http-status-codes";
 import { deleteFromCloudinary } from "../../config/cloudinary.config";
+import mongoose from "mongoose";
 
 //---------- Tour Type----------
 const createTourType = async (payload: ITourType) => {
@@ -83,7 +83,7 @@ const createTour = async (payload: Partial<ITour>) => {
 // };
 
 const getAllTour = async (queryOptions: ITourQueryOptions) => {
-  const { location, tourType, maxCost, search, sortBy, page, limit } =
+  const { location, division, tourType, maxCost, search, sortBy, page, limit } =
     queryOptions;
 
   const query: any = {};
@@ -91,6 +91,7 @@ const getAllTour = async (queryOptions: ITourQueryOptions) => {
   //filter
   if (location) query.location = location;
   if (tourType) query.tourType = tourType;
+  if (division) query.division = division;
   if (maxCost) query.costForm = { $lte: Number(maxCost) };
 
   //searching
@@ -98,6 +99,7 @@ const getAllTour = async (queryOptions: ITourQueryOptions) => {
     query.$or = [
       { title: { $regex: search, $options: "i" } },
       { description: { $regex: search, $options: "i" } },
+      { location: { $regex: search, $options: "i" } },
     ];
   }
 
@@ -120,10 +122,12 @@ const getAllTour = async (queryOptions: ITourQueryOptions) => {
   const tourFound = await Tour.countDocuments(query);
 
   const tours = await Tour.find(query)
+    .populate("division", "name")
+    .populate("tourType")
     .skip(skip)
     .limit(limit)
-    .sort(sortOptions)
-    .lean();
+    .sort(sortOptions);
+  // const tours = await Tour.find({ tourType: "69665a6cc50e6da3742eaa65" });
 
   const meta = {
     page,
@@ -210,7 +214,7 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
       isExist.images.length
     ) {
       const restImg = isExist.images.filter(
-        (imgUrl) => !payload.deletedImage?.includes(imgUrl)
+        (imgUrl) => !payload.deletedImage?.includes(imgUrl),
       );
       payload.images = [...restImg];
     }
@@ -232,7 +236,7 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
       isExist.images.length
     ) {
       await Promise.all(
-        payload.deletedImage.map((url) => deleteFromCloudinary(url))
+        payload.deletedImage.map((url) => deleteFromCloudinary(url)),
       );
     }
 

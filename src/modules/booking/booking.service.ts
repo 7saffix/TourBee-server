@@ -25,6 +25,7 @@ const createBooking = async (payload: IBooking, userId: string) => {
     const tour = await Tour.findById(booking[0].tour)
       .select("costForm")
       .session(session);
+
     const tourCost = Number(tour?.costForm) * Number(booking[0].guestCount);
 
     const transactionId = createTransactionId();
@@ -36,7 +37,7 @@ const createBooking = async (payload: IBooking, userId: string) => {
           transactionId,
         },
       ],
-      { session }
+      { session },
     );
 
     const updateBooking = await Booking.findByIdAndUpdate(
@@ -44,7 +45,7 @@ const createBooking = async (payload: IBooking, userId: string) => {
       {
         payment: payment[0]._id,
       },
-      { new: true, runValidators: true, session }
+      { new: true, runValidators: true, session },
     )
       .populate("user", "name email phone")
       .populate("tour", "title location costForm")
@@ -65,7 +66,7 @@ const createBooking = async (payload: IBooking, userId: string) => {
     session.endSession();
 
     return {
-      payment: sslPayment.GatewayPageURL,
+      paymentUrl: sslPayment.GatewayPageURL,
       booking: updateBooking,
     };
   } catch (error) {
@@ -76,9 +77,13 @@ const createBooking = async (payload: IBooking, userId: string) => {
 };
 
 const getMyBookings = async (userId: string) => {
-  const bookings = await Booking.find({ user: userId });
+  const bookings = await Booking.find({
+    user: userId,
+    status: "COMPLETE",
+  }).populate("tour", "title location costForm");
   return bookings;
 };
+
 const getSingleBooking = async (userId: string, bookingId: string) => {
   const bookingDetails = await Booking.findOne({
     _id: bookingId,
@@ -99,7 +104,7 @@ const updateBooking = async (bookingId: string, status: Partial<IBooking>) => {
     {
       new: true,
       runValidators: true,
-    }
+    },
   );
   return bookings;
 };

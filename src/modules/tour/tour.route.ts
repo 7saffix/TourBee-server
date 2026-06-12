@@ -17,23 +17,19 @@ router.post(
   "/create-tour-type",
   authCheck(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(createTourTypeZodSchema),
-  tourController.createTourType
+  tourController.createTourType,
 );
-router.get(
-  "/tour-types",
-  authCheck(Role.ADMIN, Role.SUPER_ADMIN),
-  tourController.getAllTourType
-);
+router.get("/tour-types", tourController.getAllTourType);
 router.patch(
   "/tour-type/:id",
   authCheck(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(createTourTypeZodSchema),
-  tourController.updateTourType
+  tourController.updateTourType,
 );
 router.delete(
   "/tour-type/:id",
   authCheck(Role.ADMIN, Role.SUPER_ADMIN),
-  tourController.deleteTourType
+  tourController.deleteTourType,
 );
 
 // ---------Tour---------
@@ -42,7 +38,7 @@ router.post(
   authCheck(Role.ADMIN, Role.SUPER_ADMIN),
   multerUpload.array("files"),
   validateRequest(createTourZodSchema),
-  tourController.createTour
+  tourController.createTour,
 );
 
 router.get("/", tourController.getAllTours);
@@ -51,11 +47,11 @@ router.patch(
   authCheck(Role.ADMIN, Role.SUPER_ADMIN),
   multerUpload.array("files"),
   validateRequest(updateTourZodSchema),
-  tourController.updateTour
+  tourController.updateTour,
 );
 router.delete(
   "/:id",
   authCheck(Role.ADMIN, Role.SUPER_ADMIN),
-  tourController.deleteTour
+  tourController.deleteTour,
 );
 export const tourRoutes = router;

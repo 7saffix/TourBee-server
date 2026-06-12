@@ -30,7 +30,7 @@ const createUser = async (payload: Partial<IUser>) => {
 };
 
 const getAllUsers = async (queryOptions: any) => {
-  const { page, limit, sortBy, search, isActive, role } = queryOptions;
+  const { search, isActive, role, sortBy, page, limit } = queryOptions;
 
   const query: any = {};
 
@@ -61,7 +61,7 @@ const getAllUsers = async (queryOptions: any) => {
   }
 
   //pagination
-  const skip = (page - 1) * limit;
+  const skip = Number(page - 1) * limit;
   const totalUser = await User.countDocuments(query);
 
   const users = await User.find(query)
@@ -82,7 +82,7 @@ const getAllUsers = async (queryOptions: any) => {
 const updateUser = async (
   userId: string,
   payload: Partial<IUser>,
-  decodedToken: JwtPayload
+  decodedToken: JwtPayload,
 ) => {
   const isUserExist = await User.findById(userId);
 
@@ -97,7 +97,7 @@ const updateUser = async (
     if (payload.role == Role.SUPER_ADMIN && decodedToken.role == Role.ADMIN) {
       throw new appError(
         httpStatus.FORBIDDEN,
-        "you are not permitted to update the role super admin"
+        "you are not permitted to update the role super admin",
       );
     }
   }
@@ -120,4 +120,11 @@ const updateUser = async (
   return { updatedUser };
 };
 
-export const userService = { createUser, getAllUsers, updateUser };
+const getMe = async (email: string) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new appError(404, "user not found");
+
+  return user;
+};
+
+export const userService = { createUser, getAllUsers, updateUser, getMe };

@@ -11,40 +11,59 @@ import { createUserToken } from "../../utils/userToken";
 import { envVars } from "../../config/env";
 import passport from "passport";
 
+// const credentialLogin = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     // const logInfo = await authService.credentialLogin(req.body);
+
+//     passport.authenticate("local", async (error: any, user: any, info: any) => {
+//       if (error) {
+//         return next(error);
+//       }
+
+//       if (!user) {
+//         return next(new appError(401, info.message));
+//       }
+
+//       const userToken = await createUserToken(user);
+
+//       setCookies(res, userToken);
+
+//       sendResponse(res, {
+//         success: true,
+//         statusCode: httpStatus.OK,
+//         message: "LoggedIn successful",
+//         data: {
+//           user,
+//           userToken,
+//         },
+//       });
+//     })(req, res, next);
+//   }
+// );
+
 const credentialLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    // const logInfo = await authService.credentialLogin(req.body);
+    const logInfo = await authService.credentialLogin(req.body);
 
-    passport.authenticate("local", async (error: any, user: any, info: any) => {
-      if (error) {
-        return next(error);
-      }
+    setCookies(res, logInfo.userToken);
 
-      if (!user) {
-        return next(new appError(401, info.message));
-      }
-
-      const userToken = await createUserToken(user);
-
-      setCookies(res, userToken);
-
-      sendResponse(res, {
-        success: true,
-        statusCode: httpStatus.OK,
-        message: "LoggedIn successful",
-        data: {
-          user,
-        },
-      });
-    })(req, res, next);
-  }
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "LoggedIn successful",
+      data: {
+        user: logInfo.user,
+        userToken: logInfo.userToken,
+      },
+    });
+  },
 );
 
 const getNewAccessToken = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const refreshToken = req.cookies.refreshToken;
     const tokenInfo = await authService.getNewAccessToken(
-      refreshToken as string
+      refreshToken as string,
     );
 
     setCookies(res, tokenInfo);
@@ -55,20 +74,20 @@ const getNewAccessToken = catchAsync(
       message: "refresh token created",
       data: tokenInfo,
     });
-  }
+  },
 );
 
 const logOut = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     res.clearCookie("accessToken", {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
     });
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
     });
 
     sendResponse(res, {
@@ -77,7 +96,7 @@ const logOut = catchAsync(
       message: "log out successful",
       data: null,
     });
-  }
+  },
 );
 
 const forgetPassword = catchAsync(
@@ -90,7 +109,7 @@ const forgetPassword = catchAsync(
       message: "Email send successfully",
       data: null,
     });
-  }
+  },
 );
 const resetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -104,7 +123,7 @@ const resetPassword = catchAsync(
       message: "password changes successfully",
       data: null,
     });
-  }
+  },
 );
 
 const googleCallback = catchAsync(
@@ -126,7 +145,7 @@ const googleCallback = catchAsync(
     setCookies(res, tokenInfo);
 
     res.redirect(`${envVars.FRONTEND_URL}/${redirect}`);
-  }
+  },
 );
 
 export const authController = {

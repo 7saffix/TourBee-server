@@ -16,13 +16,13 @@ router.post(
   authCheck(Role.ADMIN, Role.SUPER_ADMIN),
   multerUpload.single("file"),
   validateRequest(createDivisionZodSchema),
-  divisionController.createDivision
+  divisionController.createDivision,
 );
 
 router.get(
   "/",
-  authCheck(Role.ADMIN, Role.SUPER_ADMIN),
-  divisionController.getAllDivision
+
+  divisionController.getAllDivision,
 );
 
 router.patch(
@@ -30,12 +30,12 @@ router.patch(
   authCheck(Role.ADMIN, Role.SUPER_ADMIN),
   multerUpload.single("file"),
   validateRequest(updateDivisionZodSchema),
-  divisionController.updateDivision
+  divisionController.updateDivision,
 );
 router.delete(
   "/:id",
   authCheck(Role.ADMIN, Role.SUPER_ADMIN),
-  divisionController.deleteDivision
+  divisionController.deleteDivision,
 );
 
 export const divisionRoutes = router;

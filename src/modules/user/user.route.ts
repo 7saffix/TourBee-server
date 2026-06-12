@@ -11,18 +11,19 @@ const router = Router();
 router.post(
   "/register",
   validateRequest(createUserZodSchema),
-  userControllers.createUser
+  userControllers.createUser,
 );
 router.get(
   "/all-users",
   authCheck(Role.ADMIN, Role.SUPER_ADMIN),
-  userControllers.getAllUsers
+  userControllers.getAllUsers,
 );
+router.get("/me", authCheck(...Object.values(Role)), userControllers.getMe);
 router.patch(
   "/update/:id",
   validateRequest(updateUserZodSchema),
   authCheck(...Object.values(Role)),
-  userControllers.updateUser
+  userControllers.updateUser,
 );
 
 export const userRoutes = router;

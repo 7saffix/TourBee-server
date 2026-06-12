@@ -19,9 +19,10 @@ const credentialLogin = async (payload: Partial<IUser>) => {
   if (!isUserExist) {
     throw new appError(httpStatus.BAD_REQUEST, "Email does not exist");
   }
+
   const isPasswordMatch = await bcryptjs.compare(
     password as string,
-    isUserExist.password as string
+    isUserExist.password as string,
   );
   if (!isPasswordMatch) {
     throw new appError(httpStatus.BAD_REQUEST, "Password does not match");
@@ -30,8 +31,7 @@ const credentialLogin = async (payload: Partial<IUser>) => {
   const userToken = createUserToken(isUserExist);
 
   return {
-    accessToken: userToken.accessToken,
-    refreshToken: userToken.refreshToken,
+    userToken,
     user: isUserExist,
   };
 };

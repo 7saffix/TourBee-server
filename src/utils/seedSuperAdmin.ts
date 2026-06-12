@@ -5,9 +5,10 @@ import bcryptjs from "bcryptjs";
 
 export const seedSuperAdmin = async () => {
   try {
-    const isSuperAdminExist = await User.find({
+    const isSuperAdminExist = await User.findOne({
       email: envVars.SUPER_ADMIN_EMAIL,
     });
+
     if (isSuperAdminExist) {
       console.log("super admin already exist");
       return;
@@ -28,8 +29,8 @@ export const seedSuperAdmin = async () => {
       auths: [authProvider],
     };
 
-    const superAdmin = await User.create(payload);
-    console.log("super admin created successfully", superAdmin);
+    await User.create(payload);
+    console.log("super admin created successfully");
   } catch (error) {
     console.log(error);
   }

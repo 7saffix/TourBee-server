@@ -10,19 +10,19 @@ const successPayment = catchAsync(async (req: Request, res: Response) => {
 
   if (result.success) {
     res.redirect(
-      `${envVars.SSL.SSL_SUCCESS_FRONTEND_URL}?transactionId=${query.transactionId}&amount=${query.amount}&message=${result.message}&status=${query.status}`
+      `${envVars.SSL.SSL_SUCCESS_FRONTEND_URL}?transactionId=${query.transactionId}&amount=${query.amount}&message=${result.message}&status=${query.status}`,
     );
   }
 });
 
 const failPayment = catchAsync(async (req: Request, res: Response) => {
-  const query = req.query;
-  const result = await paymentService.failPayment(
-    query as Record<string, string>
-  );
+  const query = req.query as Record<string, string>;
+  const result = await paymentService.failPayment(query);
+  console.log(result);
+
   if (!result.success) {
     res.redirect(
-      `${envVars.SSL.SSL_FAIL_FRONTEND_URL}?transactionId=${query.transactionId}&amount=${query.amount}&success=${result.success}&message=${result.message}`
+      `${envVars.SSL.SSL_FAIL_FRONTEND_URL}?transactionId=${query.transactionId}&amount=${query.amount}&success=${result.success}&message=${result.message}`,
     );
   }
 });
@@ -30,11 +30,11 @@ const failPayment = catchAsync(async (req: Request, res: Response) => {
 const cancelPayment = catchAsync(async (req: Request, res: Response) => {
   const query = req.query;
   const result = await paymentService.cancelPayment(
-    query as Record<string, string>
+    query as Record<string, string>,
   );
   if (!result.success) {
     res.redirect(
-      `${envVars.SSL.SSL_CANCEL_FRONTEND_URL}?transactionId=${query.transactionId}&amount=${query.amount}&success=${result.success}&message=${result.message}`
+      `${envVars.SSL.SSL_CANCEL_FRONTEND_URL}?transactionId=${query.transactionId}&amount=${query.amount}&success=${result.success}&message=${result.message}`,
     );
   }
 });

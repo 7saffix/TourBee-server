@@ -5,7 +5,7 @@ export const createTourTypeZodSchema = z.object({
 });
 
 export const createTourZodSchema = z.object({
-  title: z.string({ invalid_type_error: "name must be string" }),
+  title: z.string({ invalid_type_error: "title must be string" }), // fixed typo in error message
   division: z.string({ invalid_type_error: "division must be string" }),
   tourType: z.string({ invalid_type_error: "tourType must be string" }),
   description: z
@@ -20,13 +20,18 @@ export const createTourZodSchema = z.object({
   endDate: z
     .string({ invalid_type_error: "endDate must be string" })
     .optional(),
-  costForm: z
+
+  // --- Coerce strings to numbers here ---
+  costForm: z.coerce
     .number({ invalid_type_error: "costForm must be number" })
     .optional(),
-  maxGuest: z
+  maxGuest: z.coerce
     .number({ invalid_type_error: "maxGuest must be number" })
     .optional(),
-  minAge: z.number({ invalid_type_error: "minAge must be number" }).optional(),
+  minAge: z.coerce
+    .number({ invalid_type_error: "minAge must be number" })
+    .optional(),
+
   included: z.array(z.string()).optional(),
   excluded: z.array(z.string()).optional(),
   tourPlan: z.array(z.string()).optional(),
@@ -34,7 +39,7 @@ export const createTourZodSchema = z.object({
 });
 
 export const updateTourZodSchema = z.object({
-  title: z.string({ invalid_type_error: "name must be string" }).optional(),
+  title: z.string({ invalid_type_error: "title must be string" }).optional(), // fixed typo in error message
   division: z
     .string({ invalid_type_error: "division must be string" })
     .optional(),
@@ -53,13 +58,18 @@ export const updateTourZodSchema = z.object({
   endDate: z
     .string({ invalid_type_error: "endDate must be string" })
     .optional(),
-  costForm: z
+
+  // --- Coerce strings to numbers here ---
+  costForm: z.coerce
     .number({ invalid_type_error: "costForm must be number" })
     .optional(),
-  maxGuest: z
+  maxGuest: z.coerce
     .number({ invalid_type_error: "maxGuest must be number" })
     .optional(),
-  minAge: z.number({ invalid_type_error: "minAge must be number" }).optional(),
+  minAge: z.coerce
+    .number({ invalid_type_error: "minAge must be number" })
+    .optional(),
+
   included: z.array(z.string()).optional(),
   excluded: z.array(z.string()).optional(),
   tourPlan: z.array(z.string()).optional(),
