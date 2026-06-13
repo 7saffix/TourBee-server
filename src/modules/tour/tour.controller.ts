@@ -96,12 +96,34 @@ const getAllTours = catchAsync(
   },
 );
 
+// const updateTour = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const payload = {
+//       ...req.body,
+//       images: (req.files as Express.Multer.File[]).map((file) => file.path),
+//     };
+//     const tour = await tourService.updateTour(req.params.id, payload);
+
+//     sendResponse(res, {
+//       success: true,
+//       statusCode: httpStatus.OK,
+//       message: "tour updated successfully",
+//       data: tour,
+//     });
+//   },
+// );
+
 const updateTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const payload = {
-      ...req.body,
-      images: (req.files as Express.Multer.File[]).map((file) => file.path),
-    };
+    const payload = { ...req.body };
+
+    // 🛠️ FIX: Only create payload.images if new files are actually uploaded
+    if (req.files && (req.files as Express.Multer.File[]).length > 0) {
+      payload.images = (req.files as Express.Multer.File[]).map(
+        (file) => file.path,
+      );
+    }
+
     const tour = await tourService.updateTour(req.params.id, payload);
 
     sendResponse(res, {

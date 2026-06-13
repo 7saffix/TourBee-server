@@ -79,7 +79,7 @@ const createBooking = async (payload: IBooking, userId: string) => {
 const getMyBookings = async (userId: string) => {
   const bookings = await Booking.find({
     user: userId,
-    status: "COMPLETE",
+    status: "COMPLETED",
   }).populate("tour", "title location costForm");
   return bookings;
 };

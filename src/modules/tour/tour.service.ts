@@ -188,6 +188,66 @@ const getAllTour = async (queryOptions: ITourQueryOptions) => {
   // return { meta, AllTour };
 };
 
+// const updateTour = async (id: string, payload: Partial<ITour>) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+//   try {
+//     const isExist = await Tour.findById(id).session(session);
+//     if (!isExist) {
+//       throw new appError(httpStatus.NOT_FOUND, "tour not found");
+//     }
+//     //add new image
+//     if (
+//       payload.images &&
+//       payload.images.length &&
+//       isExist.images &&
+//       isExist.images.length
+//     ) {
+//       payload.images = [...payload.images, ...isExist.images];
+//     }
+
+//     //delete image
+//     if (
+//       payload.deletedImage &&
+//       payload.deletedImage.length &&
+//       isExist.images &&
+//       isExist.images.length
+//     ) {
+//       const restImg = isExist.images.filter(
+//         (imgUrl) => !payload.deletedImage?.includes(imgUrl),
+//       );
+//       payload.images = [...restImg];
+//     }
+
+//     const updatedTour = await Tour.findByIdAndUpdate(id, payload, {
+//       new: true,
+//       runValidators: true,
+//       session,
+//     });
+
+//     await session.commitTransaction();
+//     session.endSession();
+
+//     //delete from cloudinary
+//     if (
+//       payload.deletedImage &&
+//       payload.deletedImage.length &&
+//       isExist.images &&
+//       isExist.images.length
+//     ) {
+//       await Promise.all(
+//         payload.deletedImage.map((url) => deleteFromCloudinary(url)),
+//       );
+//     }
+
+//     return updatedTour;
+//   } catch (error) {
+//     await session.abortTransaction();
+//     session.endSession();
+//     throw error;
+//   }
+// };
+
 const updateTour = async (id: string, payload: Partial<ITour>) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -196,17 +256,18 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
     if (!isExist) {
       throw new appError(httpStatus.NOT_FOUND, "tour not found");
     }
-    //add new image
-    if (
-      payload.images &&
-      payload.images.length &&
-      isExist.images &&
-      isExist.images.length
-    ) {
-      payload.images = [...payload.images, ...isExist.images];
+
+    // Case A: New images were uploaded, combine them with existing database images
+    if (payload.images && payload.images.length) {
+      if (isExist.images && isExist.images.length) {
+        payload.images = [...payload.images, ...isExist.images];
+      }
+    } else {
+      // Case B: No new images uploaded; keep the original ones safe from being overwritten
+      delete payload.images; // Prevents undefined/empty array overwriting down line
     }
 
-    //delete image
+    // Handle Image Deletions (if any target tracks strings to drop)
     if (
       payload.deletedImage &&
       payload.deletedImage.length &&
@@ -228,7 +289,7 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
     await session.commitTransaction();
     session.endSession();
 
-    //delete from cloudinary
+    // Cloudinary safe asset purging
     if (
       payload.deletedImage &&
       payload.deletedImage.length &&
